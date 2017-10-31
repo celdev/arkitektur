@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-public class Ball {
+public class Ball implements Drawable {
 
     private int x;
     private int y;

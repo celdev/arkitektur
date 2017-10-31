@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-public class Block {
+public class Block implements Drawable{
 
     public final static int WIDTH = 20;
     public final static int HEIGHT = 10;
@@ -21,13 +21,13 @@ public class Block {
     private final Paint PAINT;
 
     private final Color[] COLORS = {
-        Color.RED,
-        Color.GREEN,
-        Color.BLUE,
-        Color.CYAN,
-        Color.YELLOW,
-        Color.MAGENTA,
-        Color.BROWN
+            Color.RED,
+            Color.GREEN,
+            Color.BLUE,
+            Color.CYAN,
+            Color.YELLOW,
+            Color.MAGENTA,
+            Color.BROWN
     };
 
     public Block(int x, int y) {
@@ -48,10 +48,12 @@ public class Block {
     }
 
     public void draw(GraphicsContext canvas) {
-        Paint previousPaint = canvas.getFill();
-        canvas.setFill(PAINT);
-        canvas.fillRect(COLLIDER.getX(), COLLIDER.getY(), COLLIDER.getWidth(), COLLIDER.getHeight());
-        canvas.setFill(previousPaint);
+        if (isVisible) {
+            Paint previousPaint = canvas.getFill();
+            canvas.setFill(PAINT);
+            canvas.fillRect(COLLIDER.getX(), COLLIDER.getY(), COLLIDER.getWidth(), COLLIDER.getHeight());
+            canvas.setFill(previousPaint);
+        }
     }
 
 }

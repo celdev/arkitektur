@@ -15,7 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class Arkanoid extends Application {
+public class Arkanoid extends Application implements Observer {
 
     private Group root;
     private Canvas canvas;
@@ -23,7 +23,7 @@ public class Arkanoid extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Arkanoidf");
+        primaryStage.setTitle("Arkanoid");
 
         root = new Group();
 
@@ -31,13 +31,15 @@ public class Arkanoid extends Application {
 
         progressBar = new ProgressBar(1);
         progressBar.setMaxWidth(Double.MAX_VALUE);
+
         rows.getChildren().add(progressBar);
 
         canvas = new Canvas(800, 600);
         rows.getChildren().add(canvas);
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        GameEngine.getInstance().initWorld(gc, progressBar);
+        GameEngine.getInstance().initWorld(gc);
+        GameEngine.getInstance().registerObserver(this);
         root.getChildren().add(rows);
         primaryStage.setScene(new Scene(root));
         primaryStage.setOnCloseRequest((WindowEvent we) -> {
@@ -56,4 +58,8 @@ public class Arkanoid extends Application {
         launch(args);
     }
 
+    @Override
+    public void update(double progress) {
+        progressBar.setProgress(progress);
+    }
 }

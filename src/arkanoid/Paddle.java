@@ -9,7 +9,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 
-public class Paddle {
+public class Paddle implements Drawable{
 
     private int x;
     private int y;

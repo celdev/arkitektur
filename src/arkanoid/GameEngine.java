@@ -5,6 +5,7 @@
 package arkanoid;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ProgressBar;
@@ -38,6 +39,8 @@ public class GameEngine implements Runnable {
     private HUD livesHUD;
     private Paddle paddle;
     private ArrayList<Block> blocks = new ArrayList<>();
+    private List<Observer> observers = new ArrayList<>();
+    private List<Drawable> gameObjects = new ArrayList<>();
 
     private final int spaceHor = 16;
     private final int spaceVert = 16;
@@ -60,10 +63,23 @@ public class GameEngine implements Runnable {
         return instance;
     }
 
-    public void initWorld(GraphicsContext graphicsContext, ProgressBar inPB) {
+    public void registerObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    public void unregisterObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    public void updateObservers() {
+        for (Observer observer : observers) {
+            observer.update((double)activeBlocksInLevel/(double)blocksInLevel);
+        }
+    }
+
+    public void initWorld(GraphicsContext graphicsContext) {
         canvas = graphicsContext;
-        pb = inPB;
-        
+
         
         paddle = new Paddle((int)canvas.getCanvas().getWidth(), (int)canvas.getCanvas().getHeight());
         ball = new Ball((int)canvas.getCanvas().getWidth(), (int)canvas.getCanvas().getHeight());
@@ -73,6 +89,7 @@ public class GameEngine implements Runnable {
         for (int i = 0; i < activeBlocksInLevel; i++) {
             Block b = new Block(getBlockX(i), getBlockY(i));
             blocks.add(b);
+            gameObjects.add(b);
         }
 
         //HUD elements
@@ -80,6 +97,11 @@ public class GameEngine implements Runnable {
         livesHUD = new HUD(20, 40, "Lives: ", 36);
 
         playing = true;
+
+        gameObjects.add(paddle);
+        gameObjects.add(ball);
+        gameObjects.add(scoreHUD);
+        gameObjects.add(livesHUD);
 
         canvas.getCanvas().addEventHandler(MouseEvent.MOUSE_MOVED, (MouseEvent e) -> {
             paddle.update((int) (e.getX() - mouseX));
@@ -164,7 +186,7 @@ public class GameEngine implements Runnable {
                 b.setVisible(false);
                 activeBlocksInLevel--;
 
-                pb.setProgress((double)activeBlocksInLevel/(double)blocksInLevel);
+                updateObservers();
                 
                 ball.invertY(0.0);
                 score += 50;
@@ -183,18 +205,7 @@ public class GameEngine implements Runnable {
     private void draw() {
         if (canvas != null) {
             reset(canvas, Color.DARKGRAY);
-
-            for (Block b : blocks) {
-                if (!b.isVisible()) {
-                    continue;
-                }
-                b.draw(canvas);
-            }
-            ball.draw(canvas);
-            paddle.draw(canvas);
-            scoreHUD.draw(canvas);
-            livesHUD.draw(canvas);
-
+            gameObjects.forEach(drawable -> drawable.draw(canvas));
             if (isGameOver) {
                 HUD gameOverHUD = new HUD((int) canvas.getCanvas().getWidth() / 2, (int) canvas.getCanvas().getHeight() / 2, "Game Over", 75);
                 gameOverHUD.draw(canvas);
@@ -213,4 +224,5 @@ public class GameEngine implements Runnable {
         } catch (InterruptedException e) {
         }
     }
+
 }
