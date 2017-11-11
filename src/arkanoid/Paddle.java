@@ -9,7 +9,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 
-public class Paddle implements Drawable{
+public class Paddle extends GameObject implements Drawable, MouseMovementListener {
 
     private int x;
     private int y;
@@ -51,7 +51,11 @@ public class Paddle implements Drawable{
         return y;
     }
 
-    public void update(float dx) {
+    public void update() {
+        collider = new Rectangle(x - width / 2, y - HEIGHT / 2, width, HEIGHT);
+    }
+
+    public void updateMousePosition(int dx) {
         x += dx;
 
         if (x < X_MIN) {
@@ -60,8 +64,6 @@ public class Paddle implements Drawable{
         if (x > X_MAX) {
             x = X_MAX;
         }
-
-        collider = new Rectangle(x - width / 2, y - HEIGHT / 2, width, HEIGHT);
     }
 
     public void reset() {

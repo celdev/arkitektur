@@ -10,12 +10,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-public class Ball implements Drawable {
+public class Ball extends GameObject implements Drawable {
 
     private int x;
     private int y;
 
-    private float speed;
+    private float speed = 10;
     private boolean isMoving;
 
     private Vector2f velocityDir;
@@ -30,13 +30,11 @@ public class Ball implements Drawable {
     private final int HEIGHT = 32;
     private final int SCREEN_WIDTH;
     private final int SCREEN_HEIGHT;
-    private final Paint PAINT;
+    //private final Paint PAINT;
 
     public Ball(int inScreenWidth, int inScreenHeight) {
         SCREEN_WIDTH = inScreenWidth;
         SCREEN_HEIGHT = inScreenHeight;
-
-        //set initial sprite and collider position, initialize velocity
         reset();
 
         X_MIN = WIDTH / 2;
@@ -46,21 +44,11 @@ public class Ball implements Drawable {
 
         RADIUS = HEIGHT / 2;
 
-        speed = 10;
 
-        PAINT = Paint.valueOf(Color.rgb(255, 170, 0).toString());
     }
 
     public Rectangle getRect() {
         return collider;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
     }
 
     public void update() {

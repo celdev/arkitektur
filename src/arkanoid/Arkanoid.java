@@ -9,7 +9,6 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -17,38 +16,30 @@ import javafx.stage.WindowEvent;
 
 public class Arkanoid extends Application implements Observer {
 
-    private Group root;
-    private Canvas canvas;
+    public static final int WINDOW_WIDTH = 800;
+    public static final int WINDOW_HEIGHT = 600;
+
     private ProgressBar progressBar;
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Arkanoid");
 
-        root = new Group();
-
-        VBox rows = new VBox();
-
         progressBar = new ProgressBar(1);
         progressBar.setMaxWidth(Double.MAX_VALUE);
 
-        rows.getChildren().add(progressBar);
+        Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        canvas = new Canvas(800, 600);
-        rows.getChildren().add(canvas);
-
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        GameEngine.getInstance().initWorld(gc);
-        GameEngine.getInstance().registerObserver(this);
-        root.getChildren().add(rows);
-        primaryStage.setScene(new Scene(root));
+        GameEngineImpl.getInstance().initWorld(canvas.getGraphicsContext2D());
+        GameEngineImpl.getInstance().registerObserver(this);
+        primaryStage.setScene(new Scene(new Group(new VBox(progressBar, canvas))));
         primaryStage.setOnCloseRequest((WindowEvent we) -> {
-            GameEngine.getInstance().stop();
+            GameEngineImpl.getInstance().stop();
             Platform.exit();
         });
 
         primaryStage.show();
-        GameEngine.getInstance().start();
+        GameEngineImpl.getInstance().start();
     }
 
     /**
