@@ -7,6 +7,11 @@ package arkanoid;
 import java.util.ArrayList;
 import java.util.List;
 
+import arkanoid.ui.UIEngine;
+import arkanoid.ui.UIEngineImpl;
+import arkanoid.world.Ball;
+import arkanoid.world.Block;
+import arkanoid.world.Paddle;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
@@ -31,13 +36,12 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     private float ballSpeedFactor = 1;
     
     private Timer levelWaitTimer;
-    private GraphicsContext canvas;
+    private GraphicsContext gc;
 
     //entity member variables
     private Ball ball;
-    private HUD scoreHUD;
-    private HUD livesHUD;
     private Paddle paddle;
+    private UIEngine uiEngine;
     private ArrayList<Block> blocks = new ArrayList<>();
     private List<Observer> observers = new ArrayList<>();
     private List<Drawable> gameObjects = new ArrayList<>();
@@ -81,11 +85,10 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
 
     @Override
     public void initWorld(GraphicsContext graphicsContext) {
-        canvas = graphicsContext;
-
-        
-        paddle = new Paddle((int)canvas.getCanvas().getWidth(), (int)canvas.getCanvas().getHeight());
-        ball = new Ball((int)canvas.getCanvas().getWidth(), (int)canvas.getCanvas().getHeight());
+        gc = graphicsContext;
+        uiEngine = new UIEngineImpl(gc);
+        paddle = new Paddle();
+        ball = new Ball((int) gc.getCanvas().getWidth(), (int) gc.getCanvas().getHeight());
 
         levelWaitTimer = new Timer();
 
@@ -96,21 +99,14 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
         }
 
         //HUD elements
-        scoreHUD = new HUD(20, 20, "Score: ", 36);
-        livesHUD = new HUD(20, 40, "Lives: ", 36);
+
 
         playing = true;
 
         gameObjects.add(paddle);
         gameObjects.add(ball);
-        gameObjects.add(scoreHUD);
-        gameObjects.add(livesHUD);
 
-//        canvas.getCanvas().addEventHandler(MouseEvent.MOUSE_MOVED, (MouseEvent e) -> {
-//
-//        });
-
-        canvas.getCanvas().addEventFilter(MouseEvent.MOUSE_MOVED, this);
+        gc.getCanvas().addEventFilter(MouseEvent.MOUSE_MOVED, this);
     }
 
     @Override
@@ -147,7 +143,7 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
         ballSpeedFactor *= 1.1;// cumulative 10% increase per level
         ball.setSpeedScale(ballSpeedFactor);
         paddle.reduceWidth(10);// -10px per level
-
+        updateObservers();
         for (Block b : blocks) {
             b.setVisible(true);
         }
@@ -204,17 +200,26 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
         }
 
         //update HUDs
-        scoreHUD.update(score);
-        livesHUD.update(lives);
+        uiEngine.update();
+    }
+
+    @Override
+    public int getScore() {
+        return score;
+    }
+
+    @Override
+    public int getLives() {
+        return lives;
     }
 
     private void draw() {
-        if (canvas != null) {
-            reset(canvas, Color.DARKGRAY);
-            gameObjects.forEach(drawable -> drawable.draw(canvas));
+        if (gc != null) {
+            reset(gc, Color.DARKGRAY);
+            gameObjects.forEach(drawable -> drawable.draw(gc));
+            uiEngine.draw(gc);
             if (isGameOver) {
-                HUD gameOverHUD = new HUD((int) canvas.getCanvas().getWidth() / 2, (int) canvas.getCanvas().getHeight() / 2, "Game Over", 75);
-                gameOverHUD.draw(canvas);
+                uiEngine.stop(gc);
             }
         }
     }
@@ -222,6 +227,7 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     private void reset(GraphicsContext canvas, Color color) {
         canvas.setFill(color);
         canvas.fillRect(0, 0, canvas.getCanvas().getWidth(), canvas.getCanvas().getHeight());
+
     }
 
     private void control() {

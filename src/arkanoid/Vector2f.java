@@ -10,15 +10,11 @@ public class Vector2f {
     private double y;
     private double tilt;
 
-    private final double LENGTH;
-
     public Vector2f(float inX, float inY, double inTilt) {
         x = inX;
         y = inY;
         tilt = inTilt;
-
-        LENGTH = Math.sqrt(x * x + y * y);
-
+        double LENGTH = Math.sqrt(x * x + y * y);
         x /= LENGTH;
         y /= LENGTH;
     }

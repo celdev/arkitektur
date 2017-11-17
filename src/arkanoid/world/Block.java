@@ -2,15 +2,18 @@
  * This game is used in the course Arkitekture and Design patterns. During the course we'll discuss diffrent aspekt that makes 
  * this implmentation weak. It's then your job to improve it.
  */
-package arkanoid;
+package arkanoid.world;
 
 import java.util.Random;
+
+import arkanoid.Drawable;
+import arkanoid.GameObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-public class Block implements Drawable{
+public class Block extends GameObject implements Drawable {
 
     public final static int WIDTH = 20;
     public final static int HEIGHT = 10;
@@ -56,4 +59,13 @@ public class Block implements Drawable{
         }
     }
 
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
 }

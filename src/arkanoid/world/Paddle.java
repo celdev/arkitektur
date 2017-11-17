@@ -2,8 +2,12 @@
  * This game is used in the course Arkitekture and Design patterns. During the course we'll discuss diffrent aspekt that makes 
  * this implmentation weak. It's then your job to improve it.
  */
-package arkanoid;
+package arkanoid.world;
 
+import arkanoid.Arkanoid;
+import arkanoid.Drawable;
+import arkanoid.GameObject;
+import arkanoid.MouseMovementListener;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
@@ -11,32 +15,19 @@ import javafx.scene.paint.Color;
 
 public class Paddle extends GameObject implements Drawable, MouseMovementListener {
 
-    private int x;
-    private int y;
+    private int x = Arkanoid.WINDOW_WIDTH / 2;
+    private int y = Arkanoid.WINDOW_HEIGHT / 10 * 9;
     private int width = 50;
 
     private final int HEIGHT = 15;
-    private final int X_MIN;
-    private final int X_MAX;
-    private final int SCREEN_WIDTH;
-    private final int SCREEN_HEIGHT;
+    private final int X_MIN = width / 2;
+    private final int X_MAX = Arkanoid.WINDOW_WIDTH - width / 2;
 
-    private Rectangle collider;
-    private final Paint paint;
+    private Rectangle collider = new Rectangle(x - width / 2, y - HEIGHT / 2, width, HEIGHT);
+    private final Paint paint = Paint.valueOf(Color.CYAN.toString());;
 
-    public Paddle(int inScreenWidth, int inScreenHeight) {
-        SCREEN_WIDTH = inScreenWidth;
-        SCREEN_HEIGHT = inScreenHeight;
-
-        X_MIN = width / 2;
-        X_MAX = SCREEN_WIDTH - width / 2;
-
-        x = SCREEN_WIDTH / 2;
-        y = SCREEN_HEIGHT / 10 * 9;
-
-        collider = new Rectangle(x - width / 2, y - HEIGHT / 2, width, HEIGHT);
-
-        paint = Paint.valueOf(Color.CYAN.toString());
+    public Paddle() {
+        start();
     }
 
     public Rectangle getRect() {
@@ -49,6 +40,13 @@ public class Paddle extends GameObject implements Drawable, MouseMovementListene
 
     public int getY() {
         return y;
+    }
+
+    @Override
+    public void start() {
+        x = Arkanoid.WINDOW_WIDTH / 2;
+        y = Arkanoid.WINDOW_HEIGHT / 10 * 9;
+        collider = new Rectangle(x - width / 2, y - HEIGHT / 2, width, HEIGHT);
     }
 
     public void update() {
@@ -67,16 +65,14 @@ public class Paddle extends GameObject implements Drawable, MouseMovementListene
     }
 
     public void reset() {
-        x = SCREEN_WIDTH / 2;
-        y = SCREEN_HEIGHT / 10 * 9;
-
-        collider = new Rectangle(x - width / 2, y - HEIGHT / 2, width, HEIGHT);
+        start();
     }
 
     public void reduceWidth(int reduction) {
         width -= reduction;
     }
 
+    @Override
     public void draw(GraphicsContext canvas) {
         Paint previousPaint = canvas.getFill();
         canvas.setFill(paint);

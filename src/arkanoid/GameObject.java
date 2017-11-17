@@ -1,7 +1,7 @@
 package arkanoid;
 
-public abstract class GameObject implements Drawable {
+public abstract class GameObject {
 
-
-    abstract void update();
+    public abstract void start();
+    public abstract void update();
 }

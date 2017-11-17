@@ -14,4 +14,9 @@ public interface GameEngine {
     void stop();
 
     void resetLevel();
+
+
+    int getScore();
+
+    int getLives();
 }

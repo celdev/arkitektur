@@ -2,9 +2,13 @@
  * This game is used in the course Arkitekture and Design patterns. During the course we'll discuss diffrent aspekt that makes 
  * this implmentation weak. It's then your job to improve it.
  */
-package arkanoid;
+package arkanoid.world;
 
 import java.util.Random;
+
+import arkanoid.Drawable;
+import arkanoid.GameObject;
+import arkanoid.Vector2f;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -49,6 +53,11 @@ public class Ball extends GameObject implements Drawable {
 
     public Rectangle getRect() {
         return collider;
+    }
+
+    @Override
+    public void start() {
+
     }
 
     public void update() {
