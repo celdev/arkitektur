@@ -81,7 +81,10 @@ public class Ball extends GameObject implements Drawable {
         }
 
         collider = new Rectangle(x - WIDTH / 2, y - HEIGHT / 2, WIDTH, HEIGHT);
+    }
 
+    public Rectangle getCollider() {
+        return collider;
     }
 
     public void setMoving(boolean status) {

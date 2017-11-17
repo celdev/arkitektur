@@ -23,7 +23,7 @@ public class Block extends GameObject implements Drawable {
     private final Rectangle COLLIDER;
     private final Paint PAINT;
 
-    private final Color[] COLORS = {
+    private static final Color[] COLORS = {
             Color.RED,
             Color.GREEN,
             Color.BLUE,

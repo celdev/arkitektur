@@ -11,6 +11,7 @@ import arkanoid.ui.UIEngine;
 import arkanoid.ui.UIEngineImpl;
 import arkanoid.world.Ball;
 import arkanoid.world.Block;
+import arkanoid.world.Level;
 import arkanoid.world.Paddle;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.GraphicsContext;
@@ -28,8 +29,6 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
 
     private int score = 0;
     private int lives = 3;
-    private int activeBlocksInLevel = 20;
-    private int blocksInLevel = 20;
 
     private double mouseX;
     private double paddleMovment;
@@ -42,15 +41,11 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     private Ball ball;
     private Paddle paddle;
     private UIEngine uiEngine;
-    private ArrayList<Block> blocks = new ArrayList<>();
     private List<Observer> observers = new ArrayList<>();
-    private List<Drawable> gameObjects = new ArrayList<>();
+    private List<Drawable> drawables = new ArrayList<>();
+    private Level level;
 
-    private final int spaceHor = 16;
-    private final int spaceVert = 16;
-    private final int noBlocksInLine = 5;
-    private final int edgeOffsetHor = 300;
-    private final int edgeOffsetVert = 32;
+
 
     private static GameEngine instance;
 
@@ -79,7 +74,7 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
 
     public void updateObservers() {
         for (Observer observer : observers) {
-            observer.update((double)activeBlocksInLevel/(double)blocksInLevel);
+            observer.update((double)level.getActiveBlocksInLevel()/(double)level.getBlocksInLevel());
         }
     }
 
@@ -92,19 +87,15 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
 
         levelWaitTimer = new Timer();
 
-        for (int i = 0; i < activeBlocksInLevel; i++) {
-            Block b = new Block(getBlockX(i), getBlockY(i));
-            blocks.add(b);
-            gameObjects.add(b);
-        }
+        level = new Level();
 
         //HUD elements
 
 
         playing = true;
 
-        gameObjects.add(paddle);
-        gameObjects.add(ball);
+        drawables.add(paddle);
+        drawables.add(ball);
 
         gc.getCanvas().addEventFilter(MouseEvent.MOUSE_MOVED, this);
     }
@@ -137,27 +128,15 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
         paddle.reset();
         ball.reset();
 
-        activeBlocksInLevel = 20;
-
         //increase ball speed, reduce paddle width
         ballSpeedFactor *= 1.1;// cumulative 10% increase per level
         ball.setSpeedScale(ballSpeedFactor);
         paddle.reduceWidth(10);// -10px per level
         updateObservers();
-        for (Block b : blocks) {
-            b.setVisible(true);
-        }
+        level.resetLevel();
     }
 
-    public int getBlockX(int i) {
-        //i is block number
-        return edgeOffsetHor + Block.WIDTH / 2 + (i % noBlocksInLine) * (Block.WIDTH + spaceHor);
-    }
 
-    public int getBlockY(int i) {
-        //i is block number
-        return edgeOffsetVert + Block.HEIGHT / 2 + (int) ((Block.HEIGHT + spaceVert) * Math.floor(i / noBlocksInLine));
-    }
 
     private void update() {
         ball.update();
@@ -181,26 +160,22 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
             collisionSuppressed = false;
         }
 
-        //ball vs blocks
-        for (Block b : blocks) {
-            if (b.isVisible() && b.getRect().getBoundsInParent().intersects(ball.getRect().getBoundsInParent())) {
-                //the ball collided with a block
-                b.setVisible(false);
-                activeBlocksInLevel--;
+        level.checkCollision(ball);
 
-                updateObservers();
-                
-                ball.invertY(0.0);
-                score += 50;
-                //the last block was destroyed
-                if (activeBlocksInLevel < 1) {
-                    levelWaitTimer.startTimer(2);
-                }
-            }
-        }
 
         //update HUDs
         uiEngine.update();
+        updateObservers();
+    }
+
+    @Override
+    public void levelFinished() {
+        levelWaitTimer.startTimer(2);
+    }
+
+    @Override
+    public void increaseScore(int toIncrease) {
+        score += toIncrease;
     }
 
     @Override
@@ -216,8 +191,9 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     private void draw() {
         if (gc != null) {
             reset(gc, Color.DARKGRAY);
-            gameObjects.forEach(drawable -> drawable.draw(gc));
+            drawables.forEach(drawable -> drawable.draw(gc));
             uiEngine.draw(gc);
+            level.draw(gc);
             if (isGameOver) {
                 uiEngine.stop(gc);
             }

@@ -16,6 +16,10 @@ public interface GameEngine {
     void resetLevel();
 
 
+    void levelFinished();
+
+    void increaseScore(int toIncrease);
+
     int getScore();
 
     int getLives();
