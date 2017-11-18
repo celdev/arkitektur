@@ -1,5 +1,7 @@
 package arkanoid.world;
 
+import arkanoid.Drawable;
+import arkanoid.GameEngine;
 import arkanoid.GameEngineImpl;
 import arkanoid.GameObject;
 import javafx.scene.canvas.GraphicsContext;
@@ -7,10 +9,10 @@ import javafx.scene.canvas.GraphicsContext;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Level extends GameObject {
+public abstract class Level extends GameObject implements Drawable {
 
-    private final int blocksInLevel = 30;
-    private int activeBlocksInLevel = blocksInLevel;
+    private int blocksInLevel;
+    private int activeBlocksInLevel;
 
     private final int spaceHor = 16;
     private final int spaceVert = 16;
@@ -19,37 +21,27 @@ public class Level extends GameObject {
     private final int edgeOffsetVert = 32;
 
     private List<Block> blocks = new ArrayList<>();
+    private GameEngine ge;
 
-    public Level() {
+    public Level(GameEngine ge, int blockInLevel) {
+        this.ge = ge;
+        this.blocksInLevel = blockInLevel;
+        this.activeBlocksInLevel = blocksInLevel;
         start();
     }
 
     @Override
     public void start() {
-        for (int i = 0; i < activeBlocksInLevel; i++) {
-            Block b = new Block(getBlockX(i), getBlockY(i));
-            blocks.add(b);
-        }
+        createBlocks();
     }
 
-    public int getBlockX(int blockNumber) {
-        return edgeOffsetHor + Block.WIDTH / 2 + (blockNumber % noBlocksInLine) * (Block.WIDTH + spaceHor);
-    }
+    abstract void createBlocks();
 
-    public int getBlockY(int blockNumber) {
-        return edgeOffsetVert + Block.HEIGHT / 2 + (int) ((Block.HEIGHT + spaceVert) * Math.floor(blockNumber / noBlocksInLine));
-    }
+
 
     @Override
     public void update() {
 
-    }
-
-    public void resetLevel() {
-        for (Block b : blocks) {
-            b.setVisible(true);
-        }
-        activeBlocksInLevel = blocksInLevel;
     }
 
     public int getActiveBlocksInLevel() {
@@ -67,15 +59,20 @@ public class Level extends GameObject {
                 b.setVisible(false);
                 activeBlocksInLevel--;
                 ball.invertY(0.0);
-                GameEngineImpl.getInstance().increaseScore(50);
+                ge.increaseScore(50);
                 //the last block was destroyed
                 if (activeBlocksInLevel < 1) {
-                    GameEngineImpl.getInstance().levelFinished();
+                    ge.levelFinished();
                 }
             }
         }
     }
 
+    public List<Block> getBlocks() {
+        return blocks;
+    }
+
+    @Override
     public void draw(GraphicsContext gc) {
         blocks.forEach(block -> block.draw(gc));
     }

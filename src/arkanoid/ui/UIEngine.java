@@ -10,4 +10,5 @@ public interface UIEngine {
 
     void draw(GraphicsContext graphicsContext);
 
+    void finishGame(GraphicsContext gc, int score);
 }

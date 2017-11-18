@@ -4,6 +4,8 @@
  */
 package arkanoid;
 
+import arkanoid.world.HardCodedLevel;
+import arkanoid.world.Level;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -13,6 +15,10 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Arkanoid extends Application implements Observer {
 
@@ -30,16 +36,18 @@ public class Arkanoid extends Application implements Observer {
 
         Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        GameEngineImpl.getInstance().initWorld(canvas.getGraphicsContext2D());
-        GameEngineImpl.getInstance().registerObserver(this);
+        GameEngine ge = GameEngineImpl.getInstance();
+        List<Level> levels = new ArrayList<>(Arrays.asList(new HardCodedLevel(ge,5), new HardCodedLevel(ge,20)));
+        ge.initWorld(canvas.getGraphicsContext2D(), levels);
+        ge.registerObserver(this);
         primaryStage.setScene(new Scene(new Group(new VBox(progressBar, canvas))));
         primaryStage.setOnCloseRequest((WindowEvent we) -> {
-            GameEngineImpl.getInstance().stop();
+            ge.stop();
             Platform.exit();
         });
 
         primaryStage.show();
-        GameEngineImpl.getInstance().start();
+        ge.start();
     }
 
     /**

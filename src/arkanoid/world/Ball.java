@@ -14,6 +14,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
+import static arkanoid.world.Paddle.PADDLE_MOVEMENT_HIT_BALL_MODIFIER;
+
 public class Ball extends GameObject implements Drawable {
 
     private int x;
@@ -21,6 +23,7 @@ public class Ball extends GameObject implements Drawable {
 
     private float speed = 10;
     private boolean isMoving;
+    private boolean suppressCollision = false;
 
     private Vector2f velocityDir;
     private Rectangle collider;
@@ -35,6 +38,8 @@ public class Ball extends GameObject implements Drawable {
     private final int SCREEN_WIDTH;
     private final int SCREEN_HEIGHT;
     //private final Paint PAINT;
+    private float ballSpeedFactor = 1;
+    private static final double SPEED_INCREASE_FACTOR = 1.1;
 
     public Ball(int inScreenWidth, int inScreenHeight) {
         SCREEN_WIDTH = inScreenWidth;
@@ -93,7 +98,7 @@ public class Ball extends GameObject implements Drawable {
 
     public void invertY(double newTilt) {
         velocityDir.invertY();
-        velocityDir.setTitlt(newTilt);
+        velocityDir.setTilt(newTilt);
     }
 
     public void reset() {
@@ -123,4 +128,18 @@ public class Ball extends GameObject implements Drawable {
         canvas.setFill(previousPaint);
     }
 
+    public void increaseSpeed() {
+        ballSpeedFactor *= SPEED_INCREASE_FACTOR;
+        setSpeedScale(ballSpeedFactor);
+    }
+
+
+    public void checkPaddleCollision(Paddle paddle) {
+        if (!suppressCollision && paddle.getRect().getBoundsInParent().intersects(this.getRect().getBoundsInParent())) {
+            invertY((paddle.getPaddleMovement() * PADDLE_MOVEMENT_HIT_BALL_MODIFIER));
+            suppressCollision = true;
+        } else if (suppressCollision) {
+            suppressCollision = false;
+        }
+    }
 }

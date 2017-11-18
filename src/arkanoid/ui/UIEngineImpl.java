@@ -52,4 +52,13 @@ public class UIEngineImpl implements UIEngine {
         };
         gameOverHUD.draw(gc);
     }
+
+    @Override
+    public void finishGame(GraphicsContext gc, int score) {
+        HUD gameCompleted = new HUD((int) gc.getCanvas().getWidth() / 2, (int) gc.getCanvas().getHeight() / 2, "Game completed! Score: " + score){
+            @Override
+            public void update() {}
+        };
+        gameCompleted.draw(gc);
+    }
 }

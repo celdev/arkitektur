@@ -9,10 +9,7 @@ import java.util.List;
 
 import arkanoid.ui.UIEngine;
 import arkanoid.ui.UIEngineImpl;
-import arkanoid.world.Ball;
-import arkanoid.world.Block;
-import arkanoid.world.Level;
-import arkanoid.world.Paddle;
+import arkanoid.world.*;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
@@ -20,29 +17,28 @@ import javafx.scene.paint.Color;
 
 public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameEngine {
 
-    public static final int LOOP_MILLIS = 17;
-    private Thread gameThread = null;
+    private static final int LOOP_MILLIS = 17;
 
     private volatile boolean playing;
     private boolean isGameOver;
-    private boolean collisionSuppressed;
+    private boolean gameCompleted;
 
     private int score = 0;
     private int lives = 3;
+    private int currentLevel = 0;
 
     private double mouseX;
-    private double paddleMovment;
-    private float ballSpeedFactor = 1;
-    
-    private Timer levelWaitTimer;
+
+
+    private Timer levelWaitTimer = new Timer();
     private GraphicsContext gc;
 
-    //entity member variables
     private Ball ball;
     private Paddle paddle;
     private UIEngine uiEngine;
     private List<Observer> observers = new ArrayList<>();
     private List<Drawable> drawables = new ArrayList<>();
+    private List<Level> levels;
     private Level level;
 
 
@@ -72,26 +68,18 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
         observers.remove(observer);
     }
 
-    public void updateObservers() {
-        for (Observer observer : observers) {
-            observer.update((double)level.getActiveBlocksInLevel()/(double)level.getBlocksInLevel());
-        }
+    private void updateObservers() {
+        observers.forEach(observer -> observer.update((double)level.getActiveBlocksInLevel()/(double)level.getBlocksInLevel()));
     }
 
     @Override
-    public void initWorld(GraphicsContext graphicsContext) {
+    public void initWorld(GraphicsContext graphicsContext, List<Level> levels) {
         gc = graphicsContext;
+        this.levels = levels;
         uiEngine = new UIEngineImpl(gc);
         paddle = new Paddle();
         ball = new Ball((int) gc.getCanvas().getWidth(), (int) gc.getCanvas().getHeight());
-
-        levelWaitTimer = new Timer();
-
-        level = new Level();
-
-        //HUD elements
-
-
+        level = levels.get(0);
         playing = true;
 
         drawables.add(paddle);
@@ -102,8 +90,7 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
 
     @Override
     public void start() {
-        gameThread = new Thread(this);
-        gameThread.start();
+        new Thread(this).start();
     }
 
     @Override
@@ -113,8 +100,15 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
             draw();
             control();//sleep
             if (levelWaitTimer.isExpired()) {
-                resetLevel();
+                nextLevel();
             }
+        }
+        //playing is false so either the game over or the game completed text should be shown
+        if (isGameOver) {
+            uiEngine.stop(gc);
+        }
+        if (gameCompleted) {
+            uiEngine.finishGame(gc, score);
         }
     }
 
@@ -124,44 +118,41 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     }
 
     @Override
-    public void resetLevel() {
+    public void nextLevel() {
         paddle.reset();
         ball.reset();
 
-        //increase ball speed, reduce paddle width
-        ballSpeedFactor *= 1.1;// cumulative 10% increase per level
-        ball.setSpeedScale(ballSpeedFactor);
+        ball.increaseSpeed();
         paddle.reduceWidth(10);// -10px per level
         updateObservers();
-        level.resetLevel();
+        if (++currentLevel < levels.size()) {
+            level = levels.get(currentLevel);
+        } else {
+            playing = false;
+            gameCompleted = true;
+        }
     }
 
-
+    private void ballLost() {
+        ball.reset();
+        paddle.reset();
+        lives--;
+        if (lives < 1) {
+            isGameOver = true;
+            playing = false;
+        }
+    }
 
     private void update() {
         ball.update();
 
         //is ball outside screen?
         if (ball.isOutsideScreen()) {
-            ball.reset();
-            paddle.reset();
-            lives--;
-            if (lives < 1) {
-                isGameOver = true;
-                playing = false;
-            }
+            ballLost();
+            return;
         }
-
-        //ball vs paddle
-        if (!collisionSuppressed && paddle.getRect().getBoundsInParent().intersects(ball.getRect().getBoundsInParent())) {
-            ball.invertY((paddleMovment * 0.3));
-            collisionSuppressed = true;
-        } else if (collisionSuppressed) {
-            collisionSuppressed = false;
-        }
-
+        ball.checkPaddleCollision(paddle);
         level.checkCollision(ball);
-
 
         //update HUDs
         uiEngine.update();
@@ -194,22 +185,18 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
             drawables.forEach(drawable -> drawable.draw(gc));
             uiEngine.draw(gc);
             level.draw(gc);
-            if (isGameOver) {
-                uiEngine.stop(gc);
-            }
         }
     }
 
     private void reset(GraphicsContext canvas, Color color) {
         canvas.setFill(color);
         canvas.fillRect(0, 0, canvas.getCanvas().getWidth(), canvas.getCanvas().getHeight());
-
     }
 
     private void control() {
         try {
             Thread.sleep(LOOP_MILLIS);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException e) {//
         }
     }
 
@@ -217,7 +204,6 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     public void handle(MouseEvent e) {
         paddle.updateMousePosition((int) (e.getX() - mouseX));
         paddle.update();
-        paddleMovment = (int) (e.getX() - mouseX);
         mouseX = e.getX();
     }
 }

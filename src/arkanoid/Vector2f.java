@@ -28,7 +28,7 @@ public class Vector2f {
         y *= -1;
     }
 
-    public void setTitlt(double newTilt) {
+    public void setTilt(double newTilt) {
         tilt = newTilt;
     }
 
