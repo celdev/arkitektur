@@ -37,7 +37,6 @@ public class Ball extends GameObject implements Drawable {
     private final int HEIGHT = 32;
     private final int SCREEN_WIDTH;
     private final int SCREEN_HEIGHT;
-    //private final Paint PAINT;
     private float ballSpeedFactor = 1;
     private static final double SPEED_INCREASE_FACTOR = 1.1;
 
@@ -66,9 +65,6 @@ public class Ball extends GameObject implements Drawable {
     }
 
     public void update() {
-        //if (!isMoving)
-        //    return;
-
         x += speed * velocityDir.getX();
         y += speed * velocityDir.getY();
 

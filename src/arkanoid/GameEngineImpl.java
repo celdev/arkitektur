@@ -41,23 +41,6 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     private List<Level> levels;
     private Level level;
 
-
-
-    private static GameEngine instance;
-
-    private GameEngineImpl() {}
-
-    public static GameEngine getInstance() {
-        if (instance == null) {
-            synchronized (GameEngineImpl.class){
-                if (instance == null) {
-                    instance = new GameEngineImpl();
-                }
-            }
-        }
-        return instance;
-    }
-
     @Override
     public void registerObserver(Observer observer) {
         observers.add(observer);
@@ -76,7 +59,7 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
     public void initWorld(GraphicsContext graphicsContext, List<Level> levels) {
         gc = graphicsContext;
         this.levels = levels;
-        uiEngine = new UIEngineImpl(gc);
+        uiEngine = new UIEngineImpl(gc, this);
         paddle = new Paddle();
         ball = new Ball((int) gc.getCanvas().getWidth(), (int) gc.getCanvas().getHeight());
         level = levels.get(0);
@@ -153,7 +136,7 @@ public class GameEngineImpl implements Runnable, EventHandler<MouseEvent>, GameE
         }
         ball.checkPaddleCollision(paddle);
         level.checkCollision(ball);
-
+        level.update();
         //update HUDs
         uiEngine.update();
         updateObservers();

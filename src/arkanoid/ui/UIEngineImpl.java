@@ -1,6 +1,7 @@
 package arkanoid.ui;
 
 import arkanoid.Drawable;
+import arkanoid.GameEngine;
 import arkanoid.GameEngineImpl;
 import arkanoid.GameObject;
 import javafx.scene.canvas.GraphicsContext;
@@ -14,17 +15,17 @@ public class UIEngineImpl implements UIEngine {
     private List<GameObject> uiElements = new ArrayList<>();
     private List<Drawable> drawableUiElements = new ArrayList<>();
 
-    public UIEngineImpl(GraphicsContext gc) {
+    public UIEngineImpl(GraphicsContext gc, GameEngine gameEngine) {
         uiElements.add(new HUD(20, 20, "Score: "){
             @Override
             public void update() {
-                this.setValue(GameEngineImpl.getInstance().getScore());
+                this.setValue(gameEngine.getScore());
             }
         });
         uiElements.add(new HUD(20, 40, "Lives: "){
             @Override
             public void update() {
-                this.setValue(GameEngineImpl.getInstance().getLives());
+                this.setValue(gameEngine.getLives());
             }
         });
         drawableUiElements.addAll(getDrawables(uiElements));

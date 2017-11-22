@@ -35,8 +35,8 @@ public class Arkanoid extends Application implements Observer {
         progressBar.setMaxWidth(Double.MAX_VALUE);
 
         Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-        GameEngine ge = GameEngineImpl.getInstance();
+        GameEngineFactory gameEngineFactory = new GameEngineFactory();
+        GameEngine ge = gameEngineFactory.getGameEngine();
         List<Level> levels = new ArrayList<>(Arrays.asList(new HardCodedLevel(ge,5), new HardCodedLevel(ge,20)));
         ge.initWorld(canvas.getGraphicsContext2D(), levels);
         ge.registerObserver(this);

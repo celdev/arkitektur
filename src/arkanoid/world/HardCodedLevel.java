@@ -9,6 +9,7 @@ public class HardCodedLevel extends Level {
     private final int noBlocksInLine = 10;
     private final int edgeOffsetHor = 300;
     private final int edgeOffsetVert = 32;
+    private final int scorePerBlock = 50;
 
     public HardCodedLevel(GameEngine ge, int blocks) {
         super(ge, blocks);
@@ -16,19 +17,17 @@ public class HardCodedLevel extends Level {
 
     @Override
     void createBlocks() {
-        System.out.println("Creating blocks");
         for (int i = 0; i < getActiveBlocksInLevel(); i++) {
-            Block b = new Block(getBlockX(i), getBlockY(i));
+            Block b = new RectBlockImpl(getBlockX(i), getBlockY(i), scorePerBlock);
             getBlocks().add(b);
         }
-        System.out.println("Blocks in list = " + getBlocks().size());
     }
 
     public int getBlockX(int blockNumber) {
-        return edgeOffsetHor + Block.WIDTH / 2 + (blockNumber % noBlocksInLine) * (Block.WIDTH + spaceHor);
+        return edgeOffsetHor + RectBlockImpl.WIDTH / 2 + (blockNumber % noBlocksInLine) * (RectBlockImpl.WIDTH + spaceHor);
     }
 
     public int getBlockY(int blockNumber) {
-        return edgeOffsetVert + Block.HEIGHT / 2 + (int) ((Block.HEIGHT + spaceVert) * Math.floor(blockNumber / noBlocksInLine));
+        return edgeOffsetVert + RectBlockImpl.HEIGHT / 2 + (int) ((RectBlockImpl.HEIGHT + spaceVert) * Math.floor(blockNumber / noBlocksInLine));
     }
 }
